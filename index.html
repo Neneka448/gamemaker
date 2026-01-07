@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GameEdit Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-title" id="game-title">GameEdit Demo</div>
+          <div class="brand-sub">JSON-configured story engine</div>
+        </div>
+        <div class="hud">
+          <div class="hud-item">
+            <div class="hud-label">Day</div>
+            <div class="hud-value" id="hud-day">1</div>
+          </div>
+          <div class="hud-item">
+            <label class="file-input">
+              <input type="file" id="file-input" accept="application/json" />
+              Load JSON
+            </label>
+          </div>
+          <button class="btn ghost" id="btn-reset">Reset</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel story">
+          <div class="panel-head">
+            <h1 id="story-title">...</h1>
+          </div>
+          <div class="panel-body">
+            <p id="story-text" class="story-text">Loading...</p>
+            <div id="story-choices" class="choices"></div>
+          </div>
+        </section>
+
+        <aside class="panel side">
+          <section class="side-section">
+            <div class="side-title">Stats</div>
+            <div id="stats"></div>
+          </section>
+
+          <section class="side-section">
+            <div class="side-title">Inventory</div>
+            <div class="muted" id="inv-capacity"></div>
+            <div id="inventory"></div>
+          </section>
+
+          <section class="side-section">
+            <div class="side-title">Buffs</div>
+            <div id="buffs"></div>
+          </section>
+
+          <section class="side-section">
+            <div class="side-title">Shop</div>
+            <div id="shops"></div>
+          </section>
+        </aside>
+      </main>
+
+      <section class="panel log">
+        <div class="panel-head">
+          <div class="side-title">Log</div>
+        </div>
+        <div class="panel-body">
+          <div id="log"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="engine.js"></script>
+  </body>
+</html>

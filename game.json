@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "title": "Dusty Gate",
+    "version": 1
+  },
+  "resources": {
+    "capacity": 6
+  },
+  "stats": {
+    "hp": { "cur": 20, "max": 20 },
+    "stamina": { "cur": 6, "max": 6 },
+    "hunger": { "cur": 10, "max": 100 },
+    "money": { "cur": 20, "max": 9999 }
+  },
+  "items": {
+    "bread": {
+      "name": "Bread",
+      "stackable": true,
+      "start_count": 2,
+      "use_effects": [
+        { "type": "stat_add", "stat": "hunger", "value_expr": "-15" },
+        { "type": "log", "text": "You eat bread and feel better." }
+      ],
+      "hold_buffs": [{ "buff": "well_fed", "value_expr": "$count * 2" }]
+    },
+    "key": {
+      "name": "Rusty Key",
+      "stackable": true,
+      "start_count": 0
+    }
+  },
+  "buffs": {
+    "well_fed": {
+      "desc": "Max HP bonus from food.",
+      "value_expr": "0",
+      "modifiers": [{ "type": "stat_add_max", "stat": "hp", "value_expr": "$value" }],
+      "periodic": {
+        "every": "day",
+        "effects": [{ "type": "stat_add", "stat": "hp", "value_expr": "1" }]
+      }
+    },
+    "brave": {
+      "desc": "Stamina feels lighter.",
+      "value_expr": "1",
+      "modifiers": [
+        { "type": "stat_add_max", "stat": "stamina", "value_expr": "1" },
+        { "type": "stat_add", "stat": "stamina", "value_expr": "1" }
+      ]
+    }
+  },
+  "shops": {
+    "market": {
+      "name": "Market Stall",
+      "items": [
+        {
+          "id": "bread",
+          "price": 4,
+          "conditions": ["$stat.money.cur >= 4"],
+          "effects": [
+            { "type": "stat_add", "stat": "money", "value_expr": "-4" },
+            { "type": "item_add", "item": "bread", "count_expr": "1" },
+            { "type": "log", "text": "You bought bread." }
+          ]
+        },
+        {
+          "id": "key",
+          "price": 12,
+          "conditions": ["$stat.money.cur >= 12"],
+          "effects": [
+            { "type": "stat_add", "stat": "money", "value_expr": "-12" },
+            { "type": "item_add", "item": "key", "count_expr": "1" },
+            { "type": "log", "text": "You bought a rusty key." }
+          ]
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "trigger": "on_day_start",
+      "effects": [
+        { "type": "stat_add", "stat": "hunger", "value_expr": "10" },
+        { "type": "log", "text": "A day passes. Hunger rises." }
+      ]
+    },
+    {
+      "trigger": "on_day_start",
+      "conditions": ["$stat.hunger.cur >= 80"],
+      "effects": [
+        { "type": "stat_add", "stat": "hp", "value_expr": "-2" },
+        { "type": "log", "text": "Hunger hurts you." }
+      ]
+    }
+  ],
+  "story": {
+    "start": "n1",
+    "nodes": {
+      "n1": {
+        "title": "Arrival",
+        "text": "Dust swirls around the old town. A market stall hums nearby while a sealed gate waits at the far end.",
+        "shops": ["market"],
+        "choices": [
+          { "text": "Visit the market", "effects": [{ "type": "goto", "node": "n_market" }] },
+          { "text": "Walk to the gate", "effects": [{ "type": "goto", "node": "n_gate" }] },
+          {
+            "text": "Tell yourself to be brave",
+            "conditions": ["!hasBuff('brave')"],
+            "effects": [{ "type": "buff_add", "buff": "brave", "value_expr": "1" }]
+          },
+          { "text": "Rest for a day", "effects": [{ "type": "advance_day", "value_expr": "1" }] }
+        ]
+      },
+      "n_market": {
+        "title": "Market Stall",
+        "text": "The vendor eyes you and waits for your choice.",
+        "shops": ["market"],
+        "choices": [{ "text": "Return to the square", "effects": [{ "type": "goto", "node": "n1" }] }]
+      },
+      "n_gate": {
+        "title": "Sealed Gate",
+        "text": "The iron gate is locked and worn.",
+        "choices": [
+          {
+            "text": "Force the gate (check)",
+            "check": {
+              "name": "Force Gate",
+              "roll_expr": "roll('1d20')",
+              "base_expr": "floor(($stat.stamina.cur - 10) / 2)",
+              "buff_expr": "$buff.brave ?? 0",
+              "dc": 12,
+              "bands": {
+                "crit_fail": { "range": "1" },
+                "crit_success": { "range": "20" }
+              },
+              "success": {
+                "effects": [
+                  { "type": "log", "text": "The gate gives way." },
+                  { "type": "goto", "node": "n_forest" }
+                ]
+              },
+              "fail": {
+                "effects": [
+                  { "type": "stat_add", "stat": "hp", "value_expr": "-3" },
+                  { "type": "log", "text": "You fail and hurt yourself." }
+                ]
+              }
+            }
+          },
+          { "text": "Return to the square", "effects": [{ "type": "goto", "node": "n1" }] }
+        ]
+      },
+      "n_forest": {
+        "title": "Outer Forest",
+        "text": "Beyond the gate, a narrow trail leads into the forest. A small shrine glows faintly.",
+        "choices": [
+          {
+            "text": "Unlock the shrine door",
+            "conditions": ["hasItem('key', 1)"],
+            "effects": [
+              { "type": "item_remove", "item": "key", "count_expr": "1" },
+              { "type": "goto", "node": "n_shrine" }
+            ]
+          },
+          { "text": "Camp for the night", "effects": [{ "type": "advance_day", "value_expr": "1" }] },
+          { "text": "Head back", "effects": [{ "type": "goto", "node": "n1" }] }
+        ]
+      },
+      "n_shrine": {
+        "title": "Shrine",
+        "text": "Warm light fills the room. You feel safe enough to rest.",
+        "choices": [
+          {
+            "text": "Rest and recover",
+            "effects": [
+              { "type": "stat_add", "stat": "hp", "value_expr": "6" },
+              { "type": "stat_add", "stat": "hunger", "value_expr": "-10" },
+              { "type": "advance_day", "value_expr": "1" }
+            ]
+          },
+          { "text": "Leave quietly", "effects": [{ "type": "goto", "node": "n1" }] }
+        ]
+      },
+      "end_dead": {
+        "type": "ending",
+        "title": "Silence",
+        "text": "Your journey ends here."
+      }
+    }
+  },
+  "endings": [{ "id": "dead", "conditions": ["$stat.hp.cur <= 0"], "node": "end_dead" }]
+}
