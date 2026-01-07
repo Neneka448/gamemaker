@@ -601,7 +601,7 @@
       const before = this.state.baseStats[stat].cur;
       this.state.baseStats[stat].cur = updater(before);
       const after = this.state.baseStats[stat].cur;
-      
+
       // 返回变化信息
       return { stat, before, after, delta: after - before };
     }
@@ -750,7 +750,7 @@
       );
       const inSet = (set) => set && set.size > 0 && set.has(Math.round(rollValue));
       let result = null;
-      
+
       // 1. 先检查 crit bands（基于 roll 值）
       if (bandSets && bandSets.hasCritBands) {
         if (inSet(bandSets.critFail)) {
@@ -759,7 +759,7 @@
           result = "crit_success";
         }
       }
-      
+
       // 2. 如果用户明确定义了 success/fail bands，使用它们（基于 roll 值）
       if (!result && bandSets && bandSets.hasExplicitSuccessFail) {
         if (inSet(bandSets.success)) {
@@ -768,7 +768,7 @@
           result = "fail";
         }
       }
-      
+
       // 3. 否则，使用 total vs DC 判断
       if (!result) {
         result = totalValue >= dcValue ? "success" : "fail";
